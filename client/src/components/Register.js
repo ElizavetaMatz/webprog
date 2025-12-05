@@ -31,7 +31,6 @@ const Register = ({ onRegister, switchToLogin }) => {
 
   return (
     <div className="register-container">
-      {/* Убрали заголовок <h2>Регистрация</h2> */}
       <form onSubmit={handleSubmit} className="register-form">
         <div className="form-group">
           <label htmlFor="reg-username">Имя:</label>
