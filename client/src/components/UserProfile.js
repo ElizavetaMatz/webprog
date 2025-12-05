@@ -2,7 +2,7 @@ import React from 'react';
 import './UserProfile.css';
 
 const UserProfile = ({ user, isLoggedIn, onLogout }) => {
-  // УСЛОВНЫЙ РЕНДЕРИНГ - показываем разный контент в зависимости от условия
+  // Условный рендеринг 
   if (!isLoggedIn) {
     return (
       <div className="user-profile guest">
