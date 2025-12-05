@@ -25,7 +25,6 @@ const Login = ({ onLogin, switchToRegister }) => {
 
   return (
     <div className="login-container">
-      <h2>Вход в систему</h2>
       <form onSubmit={handleSubmit} className="login-form">
         <div className="form-group">
           <label htmlFor="username">Имя пользователя:</label>

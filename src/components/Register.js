@@ -31,23 +31,23 @@ const Register = ({ onRegister, switchToLogin }) => {
 
   return (
     <div className="register-container">
-      <h2>Регистрация</h2>
+      {/* Убрали заголовок <h2>Регистрация</h2> */}
       <form onSubmit={handleSubmit} className="register-form">
         <div className="form-group">
-          <label htmlFor="reg-username">Имя пользователя:</label>
+          <label htmlFor="reg-username">Имя:</label>
           <input
             type="text"
             id="reg-username"
             name="username"
             value={formData.username}
             onChange={handleChange}
-            placeholder="Придумайте имя пользователя"
+            placeholder="Введите ваше имя"
             required
           />
         </div>
         
         <div className="form-group">
-          <label htmlFor="email">Email:</label>
+          <label htmlFor="email">Электронная почта:</label>
           <input
             type="email"
             id="email"
@@ -68,7 +68,7 @@ const Register = ({ onRegister, switchToLogin }) => {
               name="password"
               value={formData.password}
               onChange={handleChange}
-              placeholder="Создайте пароль"
+              placeholder="Введите пароль"
               required
             />
             <button
@@ -76,7 +76,7 @@ const Register = ({ onRegister, switchToLogin }) => {
               className={`toggle-password-btn ${showPassword ? 'visible' : ''}`}
               onClick={togglePasswordVisibility}
             >
-              {showPassword ? '◉' : '◎'}
+              {showPassword ? 'Скрыть' : 'Показать'}
             </button>
           </div>
         </div>
