@@ -3,7 +3,7 @@ const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const { body, validationResult } = require('express-validator');
 const { v4: uuidv4 } = require('uuid');
-const session = require('express-session'); // ← ДОБАВИТЬ
+const session = require('express-session');
 
 const app = express();
 const PORT = 5000;
@@ -11,21 +11,21 @@ const PORT = 5000;
 // ========== Middleware ==========
 app.use(cors({
   origin: 'http://localhost:3000',
-  credentials: true // ВАЖНО: разрешаем отправку cookies
+  credentials: true
 }));
 app.use(express.json());
 
 // ========== НАСТРОЙКА СЕССИЙ ==========
 app.use(session({
-  secret: 'your-secret-key-change-this-in-production', // Секретный ключ для подписи сессий
-  resave: false, // Не сохранять сессию если не было изменений
-  saveUninitialized: false, // Не создавать сессию пока не будет данных
+  secret: 'your-secret-key-change-this-in-production', 
+  resave: false, 
+  saveUninitialized: false, 
   cookie: { 
-    secure: false, // true если используете HTTPS
-    httpOnly: true, // Защита от XSS атак
-    maxAge: 24 * 60 * 60 * 1000 // Время жизни сессии (24 часа)
+    secure: false, 
+    httpOnly: true, 
+    maxAge: 24 * 60 * 60 * 1000 
   },
-  name: 'auth-app-session' // Имя cookie
+  name: 'auth-app-session'
 }));
 
 // ========== Middleware для проверки аутентификации ==========
@@ -81,7 +81,7 @@ async function createTestUsers() {
 
 createTestUsers();
 
-// ========== ЭНДПОИНТ 1: GET /table ==========
+// GET /table 
 app.get('/table', (req, res) => {
   console.log('📋 Запрос списка пользователей');
   console.log('ID сессии:', req.sessionID);
@@ -99,11 +99,11 @@ app.get('/table', (req, res) => {
     message: 'Список пользователей получен',
     count: usersForClient.length,
     users: usersForClient,
-    sessionId: req.sessionID // Отправляем ID сессии для отладки
+    sessionId: req.sessionID
   });
 });
 
-// ========== ЭНДПОИНТ 2: POST /login ==========
+// POST /login 
 app.post('/login',
   [
     body('username').trim().notEmpty().withMessage('Введите имя пользователя'),
@@ -148,7 +148,6 @@ app.post('/login',
       req.session.isOnline = true;
       req.session.createdAt = new Date().toISOString();
       
-      // Сохраняем сессию
       req.session.save((err) => {
         if (err) {
           console.error('❌ Ошибка сохранения сессии:', err);
@@ -161,7 +160,6 @@ app.post('/login',
         console.log('✅ Сессия сохранена:', req.session);
         console.log(`🎉 Вход успешен! Пользователь: ${username}`);
         
-        // Обновляем статус в базе
         user.isOnline = true;
         
         res.json({
@@ -186,7 +184,7 @@ app.post('/login',
   }
 );
 
-// ========== ЭНДПОИНТ 3: POST /register ==========
+// POST /register 
 app.post('/register', 
   [
     body('username').trim().isLength({ min: 3, max: 30 }).withMessage('Имя должно быть от 3 до 30 символов'),
@@ -273,7 +271,7 @@ app.post('/register',
   }
 );
 
-// ========== НОВЫЙ ЭНДПОИНТ: GET /check-auth ==========
+// GET /check-auth 
 // Проверка авторизации пользователя
 app.get('/check-auth', (req, res) => {
   console.log('\n=== 🔍 ПРОВЕРКА АВТОРИЗАЦИИ ===');
@@ -294,8 +292,7 @@ app.get('/check-auth', (req, res) => {
         }
       });
     } else {
-      // Пользователь не найден в базе, но сессия есть
-      req.session.destroy(); // Удаляем невалидную сессию
+      req.session.destroy(); 
       res.json({
         success: true,
         isAuthenticated: false,
@@ -311,7 +308,7 @@ app.get('/check-auth', (req, res) => {
   }
 });
 
-// ========== НОВЫЙ ЭНДПОИНТ: POST /logout ==========
+// POST /logout 
 // Выход из системы
 app.post('/logout', (req, res) => {
   console.log('\n=== 👋 ВЫХОД ИЗ СИСТЕМЫ ===');
@@ -326,7 +323,6 @@ app.post('/logout', (req, res) => {
       console.log(`✅ Статус пользователя ${user.username} изменен на offline`);
     }
     
-    // Удаляем сессию
     req.session.destroy((err) => {
       if (err) {
         console.error('❌ Ошибка при удалении сессии:', err);
@@ -350,7 +346,7 @@ app.post('/logout', (req, res) => {
   }
 });
 
-// ========== ЗАЩИЩЕННЫЙ ЭНДПОИНТ: GET /profile ==========
+// GET /profile 
 // Только для авторизованных пользователей
 app.get('/profile', requireAuth, (req, res) => {
   const user = users.find(u => u.id === req.session.userId);
@@ -374,8 +370,6 @@ app.get('/profile', requireAuth, (req, res) => {
     });
   }
 });
-
-// ========== Дополнительные эндпоинты ==========
 
 // GET / - корневой маршрут
 app.get('/', (req, res) => {

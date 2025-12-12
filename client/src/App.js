@@ -12,18 +12,16 @@ function App() {
   const [users, setUsers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Проверяем авторизацию при загрузке приложения
   useEffect(() => {
     checkAuth();
     fetchUsers();
   }, []);
 
-  // Функция проверки авторизации по сессии
   const checkAuth = async () => {
     try {
       console.log('🔍 Проверяю авторизацию...');
       const response = await fetch('/check-auth', {
-        credentials: 'include' // ВАЖНО: отправляем cookies
+        credentials: 'include' 
       });
       
       const data = await response.json();
@@ -67,7 +65,7 @@ function App() {
       const response = await fetch('/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include', // ВАЖНО: для отправки cookies
+        credentials: 'include',
         body: JSON.stringify({
           username: loginData.username,
           password: loginData.password
@@ -95,7 +93,7 @@ function App() {
       const response = await fetch('/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include', // ВАЖНО: для отправки cookies
+        credentials: 'include', 
         body: JSON.stringify({
           username: registerData.username,
           email: registerData.email,
@@ -123,7 +121,7 @@ function App() {
     try {
       const response = await fetch('/logout', {
         method: 'POST',
-        credentials: 'include' // ВАЖНО: для отправки cookies
+        credentials: 'include' 
       });
       
       const data = await response.json();
