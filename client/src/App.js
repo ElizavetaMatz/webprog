@@ -10,31 +10,48 @@ function App() {
   const [currentUser, setCurrentUser] = useState(null);
   const [currentForm, setCurrentForm] = useState('login');
   const [users, setUsers] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Загружаем пользователей при запуске
   useEffect(() => {
+    checkAuth();
     fetchUsers();
   }, []);
 
-  // Функция для загрузки пользователей с сервера
-  const fetchUsers = async () => {
+  const checkAuth = async () => {
     try {
-      console.log('🔄 Загружаю пользователей с сервера...');
-      const response = await fetch('/table');
-      
-      if (!response.ok) {
-        throw new Error(`Ошибка HTTP: ${response.status}`);
-      }
+      console.log('🔍 Проверяю авторизацию...');
+      const response = await fetch('/check-auth', {
+        credentials: 'include' 
+      });
       
       const data = await response.json();
-      console.log('✅ Пользователи загружены:', data);
+      console.log('📦 Ответ проверки авторизации:', data);
+      
+      if (data.success && data.isAuthenticated) {
+        console.log('✅ Пользователь авторизован:', data.user);
+        setCurrentUser(data.user);
+      } else {
+        console.log('❌ Пользователь не авторизован');
+        setCurrentUser(null);
+      }
+    } catch (error) {
+      console.error('🚨 Ошибка проверки авторизации:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Загрузка пользователей
+  const fetchUsers = async () => {
+    try {
+      const response = await fetch('/table');
+      const data = await response.json();
       
       if (data.success) {
         setUsers(data.users);
       }
     } catch (error) {
       console.error('❌ Ошибка загрузки пользователей:', error);
-      // Демо-данные на случай ошибки
       setUsers([
         { id: 1, username: 'Алексей', isOnline: true },
         { id: 2, username: 'Мария', isOnline: false }
@@ -44,49 +61,39 @@ function App() {
 
   // Обработка входа
   const handleLogin = async (loginData) => {
-    console.log('🔐 Попытка входа:', loginData);
-    
     try {
       const response = await fetch('/login', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           username: loginData.username,
           password: loginData.password
         })
       });
       
-      console.log('📥 Статус ответа:', response.status);
-      
       const data = await response.json();
-      console.log('📦 Ответ сервера:', data);
       
       if (data.success) {
         alert('✅ Вход выполнен успешно!');
         setCurrentUser(data.user);
-        // Обновляем список пользователей
         fetchUsers();
       } else {
-        alert(`❌ ${data.message || 'Ошибка авторизации'}`);
+        alert(`❌ ${data.message}`);
       }
     } catch (error) {
       console.error('🚨 Ошибка при входе:', error);
-      alert('🚨 Ошибка соединения с сервером. Проверьте, что сервер запущен на порту 5000.');
+      alert('🚨 Ошибка соединения с сервером.');
     }
   };
 
   // Обработка регистрации
   const handleRegister = async (registerData) => {
-    console.log('📝 Попытка регистрации:', registerData);
-    
     try {
       const response = await fetch('/register', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include', 
         body: JSON.stringify({
           username: registerData.username,
           email: registerData.email,
@@ -94,18 +101,14 @@ function App() {
         })
       });
       
-      console.log('📥 Статус ответа:', response.status);
-      
       const data = await response.json();
-      console.log('📦 Ответ сервера:', data);
       
       if (data.success) {
         alert('✅ Регистрация успешна!');
         setCurrentUser(data.user);
-        // Обновляем список пользователей
         fetchUsers();
       } else {
-        alert(`❌ ${data.message || 'Ошибка регистрации'}`);
+        alert(`❌ ${data.message}`);
       }
     } catch (error) {
       console.error('🚨 Ошибка при регистрации:', error);
@@ -114,11 +117,38 @@ function App() {
   };
 
   // Обработка выхода
-  const handleLogout = () => {
-    setCurrentUser(null);
-    alert('👋 Вы вышли из системы');
-    fetchUsers();
+  const handleLogout = async () => {
+    try {
+      const response = await fetch('/logout', {
+        method: 'POST',
+        credentials: 'include' 
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        alert('👋 Вы успешно вышли из системы');
+        setCurrentUser(null);
+        fetchUsers();
+      }
+    } catch (error) {
+      console.error('🚨 Ошибка при выходе:', error);
+      alert('🚨 Ошибка при выходе из системы.');
+    }
   };
+
+  // Если идет проверка авторизации, показываем загрузку
+  if (isLoading) {
+    return (
+      <div className="App">
+        <div className="app-container">
+          <div className="loading">
+            <h3>Проверка авторизации...</h3>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <Router>
@@ -133,6 +163,7 @@ function App() {
                 setCurrentForm={setCurrentForm}
                 onLogin={handleLogin}
                 onRegister={handleRegister}
+                isLoggedIn={!!currentUser}
               />
             } />
             
@@ -151,7 +182,20 @@ function App() {
 }
 
 // Компонент страницы авторизации
-const AuthPage = ({ currentForm, setCurrentForm, onLogin, onRegister }) => {
+const AuthPage = ({ currentForm, setCurrentForm, onLogin, onRegister, isLoggedIn }) => {
+  if (isLoggedIn) {
+    return (
+      <div>
+        <div className="page-header">
+          <h2>Вы уже авторизованы</h2>
+        </div>
+        <div className="page-content">
+          <p>Перейдите в <a href="/users">список пользователей</a></p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div>
       <div className="page-navigation">
@@ -216,9 +260,7 @@ const UsersPage = ({ currentUser, users, onLogout }) => {
           >
             Регистрация
           </button>
-          <button 
-            className="nav-btn active"
-          >
+          <button className="nav-btn active">
             Список
           </button>
         </div>
@@ -226,6 +268,11 @@ const UsersPage = ({ currentUser, users, onLogout }) => {
 
       <div className="page-header">
         <h2>Список пользователей</h2>
+        {currentUser && (
+          <p style={{ marginTop: '10px', color: '#666' }}>
+            Вы вошли как: <strong>{currentUser.username}</strong>
+          </p>
+        )}
       </div>
 
       <div className="page-content">
