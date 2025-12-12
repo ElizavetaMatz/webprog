@@ -6,12 +6,3 @@
 
 - `client/` - React фронтенд приложение
 - `server/` - Node.js/Express бэкенд API
-
-## Установка и запуск
-
-### 1. Установка зависимостей
-
-#### Бэкенд (сервер):
-```bash
-cd server
-npm install
